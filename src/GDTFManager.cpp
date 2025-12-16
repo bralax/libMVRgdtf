@@ -6156,6 +6156,60 @@ void GdtfDmxChannelFunction::OnReadFromNode(const IXMLFileNodePtr& pNode)
 
 		if( ! channelSet->IsValid()) { delete channelSet; return; }
 
+		// For old virtual channels with recalculated DMX values(32->16), ensure unique DMXFrom values
+		if (this->GetParentDMXChannel()->IsVirtual())
+		{
+			DmxValue maxDmxValue = this->GetParentDMXChannel()->GetChannelMaxDmx();
+
+			if (fChannelSets.size() >= maxDmxValue)
+			{
+				GdtfParsingError error (GdtfDefines::EGdtfParsingError::eValueError_DmxValueHasWrongValue, objNode);
+				SceneData::GdtfFixture::AddError(error);
+				delete channelSet;
+				return;
+			}
+			
+			DmxValue currentValue = channelSet->GetDmxStart();
+
+			bool hasDuplicate = true;
+			
+			while (hasDuplicate && currentValue < maxDmxValue)
+			{
+				hasDuplicate = false;
+				for (size_t i = 0; i < fChannelSets.size(); i++)
+				{
+					if (fChannelSets[i]->GetDmxStart() == currentValue)
+					{
+						hasDuplicate = true;
+						currentValue++;
+						break;
+					}
+				}
+			}
+			
+			// If we reached the maximum and still have a duplicate, use cascading backward decrement
+			if (hasDuplicate && currentValue >= maxDmxValue)
+			{
+				for (int i = fChannelSets.size() - 1; i >= 0; i--)
+				{
+					DmxValue nextValue = (i == (int)fChannelSets.size() - 1) ? maxDmxValue : fChannelSets[i + 1]->GetDmxStart();
+					DmxValue currentElem = fChannelSets[i]->GetDmxStart();
+					DmxValue maxAllowed = (nextValue > 0) ? (nextValue - 1) : 0;
+					
+					if (currentElem >= nextValue && maxAllowed >= 0)
+					{
+						fChannelSets[i]->SetDmxStart(maxAllowed);
+					}
+				}
+				
+				currentValue = maxDmxValue;
+			}
+			
+			if (currentValue != channelSet->GetDmxStart())
+			{
+				channelSet->SetDmxStart(currentValue);
+			}
+		}
 	
 		// Link with next
 		if(!fChannelSets.empty()) 
