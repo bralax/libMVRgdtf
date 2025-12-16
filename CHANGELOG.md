@@ -1,3 +1,15 @@
+# v9.0.15 (Tue Dec 16 2025)
+
+#### 🐛 Bug Fix
+
+- Fix duplicate DMX values in virtual channel parsing with proper forwa… [#136](https://github.com/mvrdevelopment/libMVRgdtf/pull/136) ([@VzhelevVector](https://github.com/VzhelevVector))
+
+#### Authors: 1
+
+- Vladislav Zhelev ([@VzhelevVector](https://github.com/VzhelevVector))
+
+---
+
 # v9.0.14 (Thu Dec 11 2025)
 
 #### 🐛 Bug Fix
