@@ -745,25 +745,13 @@ bool SceneData::GdtfConverter::ConvertDMXValue(const TXString& strValue, const I
 			DmxValue maxChannelUnit = GetChannelMaxDmx(chanlReso);
 
 			double percentage = (dmxValueRaw / maxResolution);
-
 			double result = percentage * maxChannelUnit;
 			
-			// Clamp to avoid floating-point precision errors when converting from higher to lower resolution
-			if (result > maxChannelUnit) {
+			intValue = static_cast<DmxValue>(result + 0.5);
+			
+			if (intValue > maxChannelUnit) {
 				intValue = maxChannelUnit;
-			} else {
-				// Preserve ordering: ensure non-zero inputs stay non-zero
-				if (dmxValueRaw > 0 && result < 1.0) {
-					intValue = 1;
-				} else {
-					intValue = static_cast<DmxValue>(result + 0.5);
-				}
-				
-				if (intValue > maxChannelUnit) {
-					intValue = maxChannelUnit;
-				}
 			}
-
 		}	
 		else
 		{
